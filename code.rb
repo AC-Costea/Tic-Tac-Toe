@@ -1,3 +1,29 @@
+def input_verifier(cell_number_input)
+    cell_number_input = gets.chomp.to_i
+    until cell_number_input > 0 && cell_number_input < 10
+        puts 'You must introduce a number between 1 and 9!'
+        cell_number_input = gets.chomp.to_i
+    end
+    return cell_number_input
+end
+
+def marked_cell_verifier(check_list)
+    cell_number_input = input_verifier(cell_number_input)
+    until (check_list.include?(cell_number_input) == false && cell_number_input != 0)
+        puts 'That cell is already marked!'
+        cell_number_input = input_verifier(cell_number_input)
+    end
+    return cell_number_input
+end
+
+def player_turn
+    if @board.sign_round % 2 == 0
+        puts "#{@player1.name}, write the cell number :"
+    else
+        puts "#{@player2.name}, write the cell number :"
+    end
+end
+
 class Board
     attr_reader :sign, :sign_round
 
@@ -61,7 +87,7 @@ class Board
             return 'Win'
         elsif (@cell1 == 'x' && @cell4 == 'x' && @cell7 == 'x') || (@cell1 == 'o' && @cell4 == 'o' && @cell7 == 'o')
             return 'Win'
-        elsif (@cell2 == 'x' && @cell5 == 'x' && @cell8 == 'x') || (@cell2 == 'o' && @cell5 == 'o' && @cell9 == 'o')
+        elsif (@cell2 == 'x' && @cell5 == 'x' && @cell8 == 'x') || (@cell2 == 'o' && @cell5 == 'o' && @cell8 == 'o')
             return 'Win'
         elsif (@cell3 == 'x' && @cell6 == 'x' && @cell9 == 'x') || (@cell3 == 'o' && @cell6 == 'o' && @cell9 == 'o')
             return 'Win'
@@ -76,11 +102,10 @@ class Board
 end
 
 class Player
-    attr_accessor :name, :sign
+    attr_accessor :name
     
-    def initialize(name, sign)
+    def initialize(name)
         @name = name
-        @sign = sign
     end
 end
 
@@ -94,30 +119,37 @@ class Game
     def player_selection
         puts 'Choose the name for player 1 :'
         @player1.name = gets.chomp
+        until @player1.name.length > 0
+            puts 'You must write your name :'
+            @player1.name = gets.chomp
+        end
         puts 'Choose the name for player 2 :'
         @player2.name = gets.chomp
+        until @player2.name.length > 0
+            puts 'You must write your name :'
+            @player2.name = gets.chomp
+        end
     end
 
     def play
         @board.create_board
         puts 'Introduce the number of the cell, from 1 to 9'
+        check_list = []
         9.times do
-            if @board.sign_round % 2 == 0
-                puts "#{@player1.name}, write the cell number :"
-            else
-                puts "#{@player2.name}, write the cell number :"
-            end
-            cell_number_input = gets.chomp
-            @board.mark_cell(cell_number_input.to_i)
+            player_turn()
+            cell_number_input = marked_cell_verifier(check_list)
+            check_list.push(cell_number_input)
+            @board.mark_cell(cell_number_input)
             if @board.calculate_winner == 'Win'
-                puts 'You win'
+                puts "#{@player1.name} won!" if @board.sign == 'x'
+                puts "#{@player2.name} won!" if @board.sign == 'o'
                 break
-            end
+            end  
         end
-        puts 'You lost' if @board.calculate_winner == 'Lose'
+        puts 'It is a draw!' if @board.calculate_winner != 'Win'
     end
 end
    
-game = Game.new(Player.new('first', 'x'), Player.new('second', 'o'), Board.new)
+game = Game.new(Player.new('first'), Player.new('second'), Board.new)
 game.player_selection
 game.play
